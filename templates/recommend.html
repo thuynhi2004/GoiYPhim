@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Gợi ý cho User #{{ user_id }} — CineSuggest{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <!-- Tiêu đề trang -->
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <div>
+      <nav aria-label="breadcrumb" class="mb-1">
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="/" class="text-danger text-decoration-none">Trang chủ</a></li>
+          <li class="breadcrumb-item active text-muted">Kết quả gợi ý</li>
+        </ol>
+      </nav>
+      <h2 class="fw-bold mb-1">
+        <i class="fas fa-user-circle text-danger me-2"></i>
+        Gợi ý cho User <span class="text-danger">#{{ user_id }}</span>
+      </h2>
+      {% if evaluation %}
+      <small class="text-muted">
+        Mô hình: <strong>SVD</strong> &nbsp;|&nbsp;
+        RMSE: <span class="text-primary fw-semibold">{{ "%.4f"|format(evaluation.test_rmse) }}</span> &nbsp;|&nbsp;
+        MAE: <span class="text-success fw-semibold">{{ "%.4f"|format(evaluation.test_mae) }}</span>
+      </small>
+      {% endif %}
+    </div>
+    <a href="/" class="btn btn-outline-secondary btn-sm">
+      <i class="fas fa-arrow-left me-1"></i>Tìm user khác
+    </a>
+  </div>
+
+  <!-- ===== PHIM ĐƯỢC GỢI Ý ===== -->
+  <h4 class="mb-3 border-bottom pb-2">
+    <i class="fas fa-wand-magic-sparkles text-danger me-2"></i>
+    {{ recommendations|length }} phim được gợi ý
+  </h4>
+
+  <div class="row g-3 mb-5">
+    {% for movie in recommendations %}
+    <div class="col-sm-6 col-lg-4 col-xl-3">
+      <div class="movie-card h-100">
+        <span class="rank-badge">#{{ loop.index }}</span>
+        <h6 class="movie-title">{{ movie.title }}</h6>
+        {% if movie.year %}<span class="text-muted small">{{ movie.year }}</span>{% endif %}
+
+        <div class="genres mt-2 mb-3">
+          {% for g in movie.genres.split(', ') %}
+          <span class="genre-badge" data-genre="{{ g }}">{{ g }}</span>
+          {% endfor %}
+        </div>
+
+        <div class="mt-auto">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="text-muted small">Điểm dự đoán</span>
+            <span class="fw-bold text-warning">
+              <i class="fas fa-star me-1"></i>{{ movie.predicted_rating }}/5
+            </span>
+          </div>
+          <div class="progress" style="height:6px; background:#2a2a2a;">
+            <div class="progress-bar bg-warning" data-width="{{ movie.score_pct }}"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- ===== LỊCH SỬ ĐÁNH GIÁ ===== -->
+  {% if history %}
+  <h4 class="mb-3 border-bottom pb-2">
+    <i class="fas fa-history text-primary me-2"></i>
+    Phim bạn đã đánh giá cao nhất
+  </h4>
+  <div class="row g-3">
+    {% for movie in history %}
+    <div class="col-sm-6 col-lg-4 col-xl-3">
+      <div class="movie-card movie-card--rated h-100">
+        <h6 class="movie-title">{{ movie.title }}</h6>
+        {% if movie.year %}<span class="text-muted small">{{ movie.year }}</span>{% endif %}
+
+        <div class="genres mt-2 mb-3">
+          {% for g in movie.genres.split(', ') %}
+          <span class="genre-badge" data-genre="{{ g }}">{{ g }}</span>
+          {% endfor %}
+        </div>
+
+        <div class="mt-auto">
+          <div class="stars-display">
+            {% for i in range(1, 6) %}
+            <i class="fas fa-star {% if i <= movie.actual_rating %}text-warning{% else %}text-secondary{% endif %}"></i>
+            {% endfor %}
+            <span class="ms-2 text-muted small">{{ movie.actual_rating }}/5</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

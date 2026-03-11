@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Môi trường ảo
+venv/
+env/
+.venv/
+
+# Dữ liệu thô (lớn, không cần push)
+data/
+
+# Mô hình đã lưu (sinh ra khi chạy)
+model/saved_model.pkl
+
+# IDE / OS
+.vscode/
+.idea/
+*.DS_Store
+Thumbs.db

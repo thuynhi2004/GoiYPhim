@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}CineSuggest{% endblock %}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-light sticky-top">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="/">
+        <i class="fas fa-film text-danger fs-5"></i>
+        <span><span class="text-danger fw-bold">Cine</span>Suggest</span>
+      </a>
+      <div class="d-flex gap-2">
+        <a href="/evaluate" class="btn btn-sm btn-outline-secondary">
+          <i class="fas fa-chart-bar me-1"></i>Đánh giá mô hình
+        </a>
+        <a href="/" class="btn btn-sm btn-danger">
+          <i class="fas fa-home me-1"></i>Trang chủ
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Loading overlay -->
+  <div id="loadingOverlay">
+    <div class="spinner-border text-danger mb-3" style="width:3rem;height:3rem;" role="status"></div>
+    <p class="text-light fw-semibold">Đang tính toán gợi ý...</p>
+    <small class="text-muted">Mô hình SVD đang dự đoán điểm cho hàng nghìn bộ phim</small>
+  </div>
+
+  <main>{% block content %}{% endblock %}</main>
+
+  <footer class="text-center py-4 mt-5 small">
+    <i class="fas fa-graduation-cap me-1"></i>
+    Dự án Nhóm — Hệ thống Gợi ý Phim | Tập dữ liệu: <strong>MovieLens 100K</strong> | Mô hình: <strong>SVD (Lọc Cộng tác)</strong>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

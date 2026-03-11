@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% block title %}Đánh giá Mô hình — CineSuggest{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <div class="text-center mb-5">
+    <h2 class="fw-bold mb-2">
+      <i class="fas fa-chart-line text-danger me-2"></i>Đánh giá Hiệu suất Mô hình
+    </h2>
+    <p class="text-secondary">SVD (Phân tích Giá trị Kỳ dị) — Lọc Cộng tác</p>
+  </div>
+
+  {% if evaluation %}
+
+  <!-- ===== METRIC CARDS ===== -->
+  <div class="row g-4 justify-content-center mb-5">
+
+    <div class="col-sm-6 col-lg-3">
+      <div class="metric-card text-center p-4">
+        <div class="metric-label">CV RMSE</div>
+        <div class="metric-value text-danger">{{ "%.4f"|format(evaluation.cv_rmse_mean) }}</div>
+        <div class="metric-sub">± {{ "%.4f"|format(evaluation.cv_rmse_std) }}</div>
+        <div class="metric-desc">Sai số bình phương trung bình gốc<br>(Kiểm tra chéo 5-fold)</div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+      <div class="metric-card text-center p-4">
+        <div class="metric-label">CV MAE</div>
+        <div class="metric-value text-warning">{{ "%.4f"|format(evaluation.cv_mae_mean) }}</div>
+        <div class="metric-sub">± {{ "%.4f"|format(evaluation.cv_mae_std) }}</div>
+        <div class="metric-desc">Sai số tuyệt đối trung bình<br>(Kiểm tra chéo 5-fold)</div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+      <div class="metric-card text-center p-4">
+        <div class="metric-label">Test RMSE</div>
+        <div class="metric-value text-info">{{ "%.4f"|format(evaluation.test_rmse) }}</div>
+        <div class="metric-sub">Tập kiểm tra 20%</div>
+        <div class="metric-desc">Sai số bình phương trung bình gốc<br>(Tập kiểm tra độc lập)</div>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+      <div class="metric-card text-center p-4">
+        <div class="metric-label">Test MAE</div>
+        <div class="metric-value text-success">{{ "%.4f"|format(evaluation.test_mae) }}</div>
+        <div class="metric-sub">Tập kiểm tra 20%</div>
+        <div class="metric-desc">Sai số tuyệt đối trung bình<br>(Tập kiểm tra độc lập)</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== THAM SỐ & DATASET ===== -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-6">
+      <div class="card h-100">
+        <div class="card-header fw-semibold">
+          <i class="fas fa-cogs text-danger me-2"></i>Tham số Mô hình
+        </div>
+        <div class="card-body p-0">
+          <table class="table table-sm table-borderless mb-0">
+            <tbody>
+              <tr><td class="text-muted ps-3">Thuật toán</td>    <td>{{ evaluation.algorithm }}</td></tr>
+              <tr><td class="text-muted ps-3">Số nhân tố ẩn (k)</td><td>{{ evaluation.n_factors }}</td></tr>
+              <tr><td class="text-muted ps-3">Số vòng lặp</td>   <td>{{ evaluation.n_epochs }}</td></tr>
+              <tr><td class="text-muted ps-3">Tốc độ học</td>    <td>{{ evaluation.learning_rate }}</td></tr>
+              <tr><td class="text-muted ps-3">Chính quy hoá</td> <td>{{ evaluation.regularization }}</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card h-100">
+        <div class="card-header fw-semibold">
+          <i class="fas fa-database text-danger me-2"></i>Thống kê Tập dữ liệu
+        </div>
+        <div class="card-body p-0">
+          <table class="table table-sm table-borderless mb-0">
+            <tbody>
+              <tr><td class="text-muted ps-3">Tập dữ liệu</td>          <td>MovieLens 100K</td></tr>
+              <tr><td class="text-muted ps-3">Người dùng</td>          <td>{{ evaluation.total_users }}</td></tr>
+              <tr><td class="text-muted ps-3">Bộ phim</td>             <td>{{ evaluation.total_movies }}</td></tr>
+              <tr><td class="text-muted ps-3">Tổng đánh giá</td>       <td>{{ "{:,}".format(evaluation.total_ratings) }}</td></tr>
+              <tr><td class="text-muted ps-3">Phương pháp đánh giá</td><td>Kiểm tra chéo 5-fold</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CÁCH ĐỌC KẾT QUẢ ===== -->
+  <div class="card mb-4">
+    <div class="card-header fw-semibold">
+      <i class="fas fa-circle-info text-danger me-2"></i>Cách đọc kết quả đánh giá
+    </div>
+    <div class="card-body">
+      <div class="row g-4">
+        <div class="col-md-6">
+          <h6 class="text-danger"><i class="fas fa-square-root-variable me-1"></i>RMSE</h6>
+          <p class="text-muted small mb-0">
+            Sai số trung bình bình phương giữa điểm dự đoán và điểm thực tế.
+            Trên thang 1–5 sao, <strong>RMSE &lt; 1.0</strong> được xem là tốt.
+            Ví dụ RMSE = 0.93 → sai lệch trung bình ~0.93 sao.
+          </p>
+        </div>
+        <div class="col-md-6">
+          <h6 class="text-danger"><i class="fas fa-ruler me-1"></i>MAE</h6>
+          <p class="text-muted small mb-0">
+            Sai số tuyệt đối trung bình — dễ diễn giải hơn RMSE.
+            <strong>MAE &lt; 0.8</strong> trên thang 1–5 là chấp nhận được.
+            Ví dụ MAE = 0.74 → dự đoán sai trung bình 0.74 sao.
+          </p>
+        </div>
+        <div class="col-md-6">
+          <h6 class="text-danger"><i class="fas fa-arrows-rotate me-1"></i>Kiểm tra chéo 5-fold</h6>
+          <p class="text-muted small mb-0">
+            Chia dữ liệu thành 5 phần, luân phiên dùng 4 phần để huấn luyện
+            và 1 phần để kiểm tra, lấy trung bình 5 lần. Giúp đánh giá
+            khách quan và phát hiện overfitting.
+          </p>
+        </div>
+        <div class="col-md-6">
+          <h6 class="text-danger"><i class="fas fa-vials me-1"></i>Phân chia Huấn luyện/Kiểm tra (80/20)</h6>
+          <p class="text-muted small mb-0">
+            80% dữ liệu để huấn luyện, 20% còn lại để kiểm tra độc lập.
+            Kết quả Test RMSE/MAE phản ánh khả năng tổng quát hoá của mô hình
+            trên dữ liệu chưa từng thấy.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Nút huấn luyện lại -->
+  <div class="text-center">
+    <button class="btn btn-outline-danger" id="retrainBtn">
+      <i class="fas fa-arrows-rotate me-2"></i>Huấn luyện lại mô hình
+    </button>
+    <div id="retrainStatus" class="mt-3 d-none"></div>
+  </div>
+
+  {% else %}
+  <div class="alert alert-warning text-center">
+    <i class="fas fa-triangle-exclamation me-2"></i>
+    Mô hình chưa được huấn luyện. Trở về <a href="/" class="alert-link">trang chủ</a>.
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('retrainBtn')?.addEventListener('click', function () {
+  const btn = this;
+  const status = document.getElementById('retrainStatus');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang huấn luyện...';
+  status.className = 'mt-3';
+  status.innerHTML = '<span class="text-muted">Quá trình này có thể mất 2–3 phút...</span>';
+
+  fetch('/retrain', { method: 'POST' })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        status.innerHTML =
+          `<div class="alert alert-success d-inline-block">
+             ✓ Huấn luyện xong! CV RMSE = <strong>${data.metrics.cv_rmse_mean.toFixed(4)}</strong>
+             &nbsp;|&nbsp; Test RMSE = <strong>${data.metrics.test_rmse.toFixed(4)}</strong>
+             &nbsp; <a href="/evaluate" class="alert-link">Tải lại trang</a>
+           </div>`;
+      } else {
+        status.innerHTML = `<div class="alert alert-danger d-inline-block">${data.error}</div>`;
+      }
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-arrows-rotate me-2"></i>Huấn luyện lại mô hình';
+    })
+    .catch(() => {
+      status.innerHTML = '<div class="alert alert-danger d-inline-block">Có lỗi xảy ra.</div>';
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-arrows-rotate me-2"></i>Huấn luyện lại mô hình';
+    });
+});
+</script>
+{% endblock %}
