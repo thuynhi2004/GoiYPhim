@@ -5,7 +5,7 @@ Chạy: python app.py  →  truy cập http://localhost:5000
 import os
 import sys
 
-from flask import Flask, jsonify, redirect, render_template, request, url_for
+from flask import Flask, jsonify, redirect, render_template, request, send_from_directory, url_for
 
 app = Flask(__name__)
 
@@ -38,6 +38,10 @@ _init_recommender()
 # ---------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------
+
+@app.route("/favicon.ico")
+def favicon():
+    return send_from_directory(app.static_folder, "favicon.svg", mimetype="image/svg+xml")
 
 @app.route("/")
 def index():
