@@ -5,8 +5,9 @@ Chạy: python app.py  →  truy cập http://localhost:5000
 import os
 import sys
 import json
+import zipfile
 from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
+from urllib.request import Request, urlopen, urlretrieve
 
 from flask import Flask, jsonify, redirect, render_template, request, send_from_directory, url_for
 
@@ -92,10 +93,35 @@ def _get_team_members_for_render():
     return _fetch_team_members()
 
 
+def _ensure_movielens_data(data_file_path):
+    """Auto-download MovieLens 100K if required files are missing."""
+    if os.path.exists(data_file_path):
+        return True
+
+    project_root = os.path.dirname(__file__)
+    data_dir = os.path.join(project_root, "data")
+    archive_path = os.path.join(data_dir, "ml-100k.zip")
+    dataset_url = "https://files.grouplens.org/datasets/movielens/ml-100k.zip"
+
+    os.makedirs(data_dir, exist_ok=True)
+    print("[INFO] Không tìm thấy dữ liệu MovieLens. Bắt đầu tải tự động...", file=sys.stderr)
+    try:
+        urlretrieve(dataset_url, archive_path)
+        with zipfile.ZipFile(archive_path, "r") as zf:
+            zf.extractall(data_dir)
+        if os.path.exists(archive_path):
+            os.remove(archive_path)
+    except Exception as exc:
+        print(f"[ERROR] Tải dữ liệu tự động thất bại: {exc}", file=sys.stderr)
+        return False
+
+    return os.path.exists(data_file_path)
+
+
 def _init_recommender():
     global recommender, data_ready, model_ready
     data_file = os.path.join(os.path.dirname(__file__), "data", "ml-100k", "u.data")
-    data_ready = os.path.exists(data_file)
+    data_ready = _ensure_movielens_data(data_file)
     if not data_ready:
         return
 
