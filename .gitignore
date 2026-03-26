@@ -13,6 +13,7 @@ build/
 venv/
 env/
 .venv/
+.env
 
 # Dữ liệu thô (lớn, không cần push)
 data/

@@ -4,6 +4,9 @@ Chạy: python app.py  →  truy cập http://localhost:5000
 """
 import os
 import sys
+import json
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 from flask import Flask, jsonify, redirect, render_template, request, send_from_directory, url_for
 
@@ -15,6 +18,78 @@ app = Flask(__name__)
 recommender = None
 data_ready = False
 model_ready = False
+
+
+def _load_env_file(env_path):
+    """Load simple KEY=VALUE pairs from .env into process environment."""
+    if not os.path.exists(env_path):
+        return
+
+    with open(env_path, "r", encoding="utf-8") as f:
+        for raw_line in f:
+            line = raw_line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            key = key.strip()
+            value = value.strip().strip('"').strip("'")
+            if key:
+                os.environ[key] = value
+
+
+def _github_get_json(url, headers):
+    req = Request(url, headers=headers, method="GET")
+    with urlopen(req, timeout=8) as resp:
+        payload = resp.read().decode("utf-8")
+        return json.loads(payload)
+
+
+def _fetch_team_members():
+    collaborators_url = "https://api.github.com/repos/thuynhi2004/GoiYPhim/collaborators?per_page=100"
+    token = os.getenv("GITHUB_TOKEN", "").strip()
+
+    if not token:
+        print("[WARN] Thiếu GITHUB_TOKEN, không thể lấy danh sách thành viên động.", file=sys.stderr)
+        return []
+
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "Authorization": f"Bearer {token}",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "GoiYPhim-Flask-App",
+    }
+    try:
+        collaborators = _github_get_json(collaborators_url, headers)
+
+        team_members = {}
+
+        for collaborator in collaborators:
+            if collaborator.get("type") != "User":
+                continue
+            login = collaborator.get("login", "")
+            if not login:
+                continue
+            team_members[login] = {
+                "login": login,
+                "name": collaborator.get("login", login),
+                "html_url": collaborator.get("html_url", "#"),
+                "avatar_url": collaborator.get("avatar_url", ""),
+                "contributions": 0,
+            }
+
+        members = sorted(
+            team_members.values(),
+            key=lambda m: (-int(m.get("contributions", 0)), m.get("login", "").lower()),
+        )
+        return members
+    except (HTTPError, URLError, TimeoutError, json.JSONDecodeError) as exc:
+        print(f"[WARN] Không lấy được collaborators từ GitHub: {exc}", file=sys.stderr)
+        return []
+
+
+def _get_team_members_for_render():
+    """Render team members from GitHub API only."""
+    return _fetch_team_members()
 
 
 def _init_recommender():
@@ -35,6 +110,8 @@ def _init_recommender():
 
 _init_recommender()
 
+_load_env_file(os.path.join(os.path.dirname(__file__), ".env"))
+
 # ---------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------
@@ -47,12 +124,14 @@ def favicon():
 def index():
     total_users  = recommender.get_total_users()  if model_ready else 943
     total_movies = recommender.get_total_movies() if model_ready else 1682
+    team_members = _get_team_members_for_render()
     return render_template(
         "index.html",
         data_ready=data_ready,
         model_ready=model_ready,
         total_users=total_users,
         total_movies=total_movies,
+        team_members=team_members,
     )
 
 
@@ -73,6 +152,7 @@ def recommend():
             model_ready=model_ready,
             total_users=max_u,
             total_movies=recommender.get_total_movies(),
+            team_members=_get_team_members_for_render(),
         )
 
     recs       = recommender.recommend(user_id, n)

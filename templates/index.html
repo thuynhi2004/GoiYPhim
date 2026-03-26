@@ -149,25 +149,18 @@
 <div class="container mb-5">
   <h2 class="text-center mb-4 fw-semibold text-dark">Thành viên Nhóm</h2>
   <div class="d-flex flex-wrap justify-content-center gap-4">
-
+    {% for member in team_members %}
     <div class="member-card text-center p-4 rounded border" style="min-width:160px">
-      <img src="https://github.com/thuynhi2004.png" class="rounded-circle mb-3" width="64" height="64"
-           onerror="this.src='https://ui-avatars.com/api/?name=Thuy+Nhi&background=e50914&color=fff&size=64'">
-      <div class="fw-bold">Thúy Nhi</div>
-      <a href="https://github.com/thuynhi2004" target="_blank" class="text-muted small text-decoration-none">
-        <i class="fab fa-github me-1"></i>thuynhi2004
+      <img src="{{ member.avatar_url }}" class="rounded-circle mb-3" width="64" height="64"
+           onerror="this.src='https://ui-avatars.com/api/?name={{ member.login }}&background=e50914&color=fff&size=64'">
+      <div class="fw-bold">{{ member.name }}</div>
+      <a href="{{ member.html_url }}" target="_blank" class="text-muted small text-decoration-none">
+        <i class="fab fa-github me-1"></i>{{ member.login }}
       </a>
     </div>
-
-    <div class="member-card text-center p-4 rounded border" style="min-width:160px">
-      <img src="https://github.com/huynhlalyla.png" class="rounded-circle mb-3" width="64" height="64"
-           onerror="this.src='https://ui-avatars.com/api/?name=Huynh+La+Ly+La&background=e50914&color=fff&size=64'">
-      <div class="fw-bold">Huỳnh La Ly La</div>
-      <a href="https://github.com/huynhlalyla" target="_blank" class="text-muted small text-decoration-none">
-        <i class="fab fa-github me-1"></i>huynhlalyla
-      </a>
-    </div>
+    {% endfor %}
 
   </div>
 </div>
+
 {% endblock %}
